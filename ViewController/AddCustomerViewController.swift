@@ -53,12 +53,6 @@ class AddCustomerViewController: UIViewController {
             return
         }
         
-//        // Validate age
-//        if age < 18 || age > 100 {
-//            showAlert(message: "Age must be between 18 and 100")
-//            return
-//        }
-        
         if let existingCustomer = customer {
             // Update existing customer
             let updatedCustomer = Customer(
@@ -77,6 +71,7 @@ class AddCustomerViewController: UIViewController {
             // Create new customer
             let newCustomer = dataManager.addCustomer(name: name, age: age, email: email)
             
+            showAlert(message: "Customer added successfully", style: .success)
             //notify delegate
             delegate?.didAddCustomer(newCustomer)
             navigationController?.popViewController(animated: true)
@@ -93,9 +88,8 @@ class AddCustomerViewController: UIViewController {
         return emailPred.evaluate(with: email)
     }
     
-    private func showAlert(message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+    private func showAlert(message: String, style: AlertStyle = .error) {
+        let customAlert = CustomAlertView()
+        customAlert.show(style: style, message: message, in: self, autoDismiss: style == .success)
     }
 }

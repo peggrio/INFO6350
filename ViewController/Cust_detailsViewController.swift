@@ -69,6 +69,7 @@ class CustomerDataViewController: UIViewController {
         
         if dataManager.updateCustomer(updatedCustomer) {
             // Notify delegate of the update
+            showAlert(message: "Customer updated successfully", style: .success)
             delegate?.didUpdateCustomer(updatedCustomer)
             dismiss(animated: true)
         } else {
@@ -82,94 +83,8 @@ class CustomerDataViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     
-    private func showAlert(message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+    private func showAlert(message: String, style: AlertStyle = .error) {
+        let customAlert = CustomAlertView()
+        customAlert.show(style: style, message: message, in: self, autoDismiss: style == .success)
     }
 }
-        
-//        if let updateVC = storyboard?.instantiateViewController(withIdentifier: "UpdateCustomerViewController") as? UpdateCustomerViewController {
-//            updateVC.customerId = Int(id) ?? 0
-//            updateVC.customerName = name
-//            updateVC.customerAge = age
-//            updateVC.customerEmail = email
-//            updateVC.delegate = self
-//            present(updateVC, animated: true)
-//        }
-//    }
-//
-//    @IBAction func deleteTapped(_ sender: UIButton) {
-//        print("delete buttom tapped")
-//        
-//        // Show confirmation alert
-//        let alert = UIAlertController(
-//            title: "Delete Customer",
-//            message: "Are you sure you want to delete customer '\(name)'?",
-//            preferredStyle: .alert
-//        )
-//        
-//        // Add Cancel action
-//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-//        
-//        // Add Delete action
-//        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
-//            guard let self = self else { return }
-//            
-//            // Try to delete the customer
-//            if self.dataManager.deleteCustomer(id: Int(self.id) ?? 0) {
-//                // Show success alert
-//                self.showDeleteSuccessAlert()
-//            } else {
-//                // Show error alert
-//                self.showDeleteFailedAlert()
-//            }
-//        })
-//        
-//        // Present the alert
-//        present(alert, animated: true)
-//        
-//    }
-//    
-//    private func showDeleteSuccessAlert() {
-//            let alert = UIAlertController(
-//                title: "Success",
-//                message: "Customer deleted successfully",
-//                preferredStyle: .alert
-//            )
-//            
-//            alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-//                // Pop back to previous view controller
-//                self?.navigationController?.popViewController(animated: true)
-//            })
-//            
-//            present(alert, animated: true)
-//        }
-//        
-//        private func showDeleteFailedAlert() {
-//            let alert = UIAlertController(
-//                title: "Error",
-//                message: "Failed to delete customer",
-//                preferredStyle: .alert
-//            )
-//            
-//            alert.addAction(UIAlertAction(title: "OK", style: .default))
-//            
-//            present(alert, animated: true)
-//        }
-//}
-//
-//// MARK: - Update Delegate Protocol
-//protocol UpdateCustomerDelegate: AnyObject {
-//    func didUpdateCustomer(_ customer: Customer)
-//}
-//
-//// MARK: - CustomerDataViewController Extension
-//extension CustomerDataViewController: UpdateCustomerDelegate {
-//    func didUpdateCustomer(_ customer: Customer) {
-//        // Update the UI with new customer data
-//        name = customer.name
-//        age = String(customer.age)
-//        setupUI()
-//    }
-

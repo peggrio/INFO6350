@@ -164,8 +164,6 @@ extension CustomerTableViewController: UpdateCustomerDelegate {
             customers[index] = updatedCustomer
             tableView.reloadData()
         }
-        
-        // Update in data manager
-        dataManager.updateCustomer(updatedCustomer)
+
     }
 }
