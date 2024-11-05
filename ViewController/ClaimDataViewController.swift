@@ -120,14 +120,9 @@ class ClaimDataViewController: UIViewController {
         }
     }
     
-    private func showAlert(message: String) {
-        let alert = UIAlertController(
-            title: "Error",
-            message: message,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+    private func showAlert(message: String, style: AlertStyle = .error) {
+        let customAlert = AlertView()
+        customAlert.show(style: style, message: message, in: self, autoDismiss: style == .success)
     }
 }
 
