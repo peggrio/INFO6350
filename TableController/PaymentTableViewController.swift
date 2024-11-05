@@ -65,6 +65,7 @@ class PaymentTableViewController: UITableViewController{
         tableView.deselectRow(at: indexPath, animated: true)
         let payment = payments[indexPath.row]
         
+        print("selected certain payment")
         let payment_dataVC = PaymentDataViewController()
         payment_dataVC.payment = payment
         payment_dataVC.delegate = self
@@ -125,7 +126,7 @@ class PaymentTableViewController: UITableViewController{
     }
 }
 
-// Add conformance to ClaimUpdateDelegate
+// Add conformance to PaymentUpdateDelegate
 extension PaymentTableViewController: PaymentUpdateDelegate {
     func didAddPayment(_ payment: Payment) {
         payments.append(payment)

@@ -39,6 +39,12 @@ class AddPolicyViewController: UIViewController {
         premiumAmountTextField.keyboardType = .default
     }
     
+    private func setupDatePickers() {
+        // Set the date picker mode to .date to only show the date, not the time
+        policyStartDatePicker.datePickerMode = .date
+        policyEndDatePicker.datePickerMode = .date
+    }
+    
     private func populateFields(with policy: Policy) {
         customerIdTextField.text = String(policy.customerId)
         premiumAmountTextField.text = String(policy.premiumAmount)
@@ -64,8 +70,8 @@ class AddPolicyViewController: UIViewController {
         let selectedStartDate = policyStartDatePicker.date
         let selectedEndDate = policyEndDatePicker.date
         
-        // Validate end date is after start date
-        guard selectedEndDate > selectedStartDate else {
+        // Validate end date is equal or after start date
+        guard selectedEndDate >= selectedStartDate else {
             showAlert(message: "End date must be after start date")
             return
         }
@@ -95,20 +101,25 @@ class AddPolicyViewController: UIViewController {
                 showAlert(message: "Failed to update policy")
             }
         } else {
-            do {
-                let newPolicy = try dataManager.addPolicy(
-                    customerId: Int(customerId) ?? 0,
-                    policyType: selectedType,
-                    premiumAmount: premium,
-                    startDate: startDateString,
-                    endDate: endDateString
-                )
-                showAlert(message: "Policy added successfully", style: .success)
-                // Notify delegate of the new policy
-                delegate?.didAddPolicy(newPolicy)
-            } catch {
+            print("check check")
+            if !dataManager.customerIdExisted(customerId: Int(customerId)) {
+                print("check check2")
                 showAlert(message: "Customer id not existed")
+                return
             }
+            
+            print("check check3")
+            let newPolicy = dataManager.addPolicy(
+                customerId: Int(customerId),
+                policyType: selectedType,
+                premiumAmount: premium,
+                startDate: startDateString,
+                endDate: endDateString
+            )
+            showAlert(message: "Policy added successfully", style: .success)
+            // Notify delegate of the new policy
+            delegate?.didAddPolicy(newPolicy)
+        
         }
 
         dismiss(animated: true)

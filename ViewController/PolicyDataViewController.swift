@@ -100,7 +100,7 @@ class PolicyDataViewController: UIViewController, UIPickerViewDelegate, UIPicker
         let selectedEndDate = policyEndDatePicker.date
         
         // Validate end date is after start date
-        guard selectedEndDate > startDate else {
+        guard selectedEndDate >= startDate else {
             showAlert(message: "End date must be after start date")
             return
         }

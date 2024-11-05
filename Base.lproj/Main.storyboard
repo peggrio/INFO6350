@@ -87,8 +87,6 @@
         <!--Update Customer View Controller-->
         <scene sceneID="9wa-SW-LaB">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="4zq-qH-cc4" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-                <exit id="PaP-nj-B2S" userLabel="Exit" sceneMemberID="exit"/>
                 <viewController storyboardIdentifier="UpdateCustomerViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="RjN-J6-VnM" customClass="UpdateCustomerViewController" customModule="insurance_system05" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="vdf-nR-G0p">
                         <rect key="frame" x="0.0" y="0.0" width="430" height="932"/>
@@ -153,6 +151,8 @@
                         <outlet property="nameTextField" destination="3Il-o5-R7q" id="B5V-cS-ShO"/>
                     </connections>
                 </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4zq-qH-cc4" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="PaP-nj-B2S" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="5676" y="-158"/>
         </scene>
@@ -349,6 +349,7 @@
                         <barButtonItem key="rightBarButtonItem" title="Item" systemItem="add" id="o38-BE-tGw">
                             <connections>
                                 <action selector="addCustomerTapped:" destination="wSi-jw-aHa" id="hdM-9R-xFt"/>
+                                <segue destination="BYZ-38-t0r" kind="show" identifier="addCustomerSegue" id="oVe-zR-lLM"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -605,7 +606,7 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <datePicker contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="NPm-wE-gpN">
+                            <datePicker contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" translatesAutoresizingMaskIntoConstraints="NO" id="NPm-wE-gpN">
                                 <rect key="frame" x="0.0" y="593" width="430" height="37"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             </datePicker>
@@ -649,7 +650,7 @@
                                     <action selector="cancelButtonTapped:" destination="JQp-d7-kFZ" eventType="touchUpInside" id="eOB-sg-E85"/>
                                 </connections>
                             </button>
-                            <datePicker contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="cE2-Sz-w85">
+                            <datePicker contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" translatesAutoresizingMaskIntoConstraints="NO" id="cE2-Sz-w85">
                                 <rect key="frame" x="0.0" y="465" width="430" height="68"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             </datePicker>
@@ -667,7 +668,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Yph-bK-NAg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2246.5116279069766" y="1605.579399141631"/>
+            <point key="canvasLocation" x="2249" y="2333"/>
         </scene>
         <!--Title-->
         <scene sceneID="pcQ-FT-rSB">
@@ -729,7 +730,7 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <datePicker contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="imR-mi-EbA">
+                            <datePicker contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" translatesAutoresizingMaskIntoConstraints="NO" id="imR-mi-EbA">
                                 <rect key="frame" x="134" y="565" width="287" height="53"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             </datePicker>
@@ -772,7 +773,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="b9s-AN-u7b" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3246.9767441860463" y="1605.579399141631"/>
+            <point key="canvasLocation" x="2283" y="1461"/>
         </scene>
         <!--Claim Table View Controller-->
         <scene sceneID="Q4s-nF-3iK">

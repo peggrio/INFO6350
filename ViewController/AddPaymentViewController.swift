@@ -212,5 +212,5 @@ extension AddPaymentViewController: UIPickerViewDelegate, UIPickerViewDataSource
            return paymentStatuses[row]
        }
        return nil
-}
+   }
 }
