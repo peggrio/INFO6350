@@ -24,6 +24,8 @@ class PolicyDataViewController: UIViewController, UIPickerViewDelegate, UIPicker
     var startDate = Date()
     var endDate = Date()
     
+    var policy: Policy?
+    
     // Policy type options for picker
     private let policyTypes = ["Health", "Life", "Auto", "Travel"]
     
@@ -31,6 +33,7 @@ class PolicyDataViewController: UIViewController, UIPickerViewDelegate, UIPicker
         super.viewDidLoad()
         setupUI()
         setupPicker()
+        setupNavigationBar()
     }
     
     private func setupUI() {
@@ -58,6 +61,27 @@ class PolicyDataViewController: UIViewController, UIPickerViewDelegate, UIPicker
         }
     }
     
+    // MARK: - Setup
+    private func setupNavigationBar() {
+        let viewClaimsButton = UIBarButtonItem(
+            title: "View Claims",
+            style: .plain,
+            target: self,
+            action: #selector(viewClaimTapped)
+        )
+        
+        let viewPaymentsButton = UIBarButtonItem(
+            title: "View Payments",
+            style: .plain,
+            target: self,
+            action: #selector(viewPaymentsTapped)
+        )
+        
+        // Set as right bar button item
+        navigationItem.rightBarButtonItems = [viewClaimsButton, viewPaymentsButton]
+    }
+    
+    // MARK: - Navigation
     @IBAction func updateTapped(_ sender: UIButton) {
         print("update button tapped")
         
@@ -107,6 +131,27 @@ class PolicyDataViewController: UIViewController, UIPickerViewDelegate, UIPicker
             showAlert(message: "Failed to update policy")
         }
     }
+    
+    
+    @objc func viewClaimTapped(_ sender: UIBarButtonItem) {
+        print("view claim tapped")
+        
+        if let claimsVC = storyboard?.instantiateViewController(withIdentifier: "ClaimTableViewController") as? ClaimTableViewController {
+            // Pass the data
+            claimsVC.policyId = Int(policyId)
+            claimsVC.policyType = policyType
+            
+            // Push the view controller
+            navigationController?.pushViewController(claimsVC, animated: true)
+        }
+    }
+    
+    @objc func viewPaymentsTapped() {
+        let paymentsVC = PaymentTableViewController()
+        paymentsVC.policyId = Int(policyId)
+        navigationController?.pushViewController(paymentsVC, animated: true)
+    }
+    
     
     // MARK: - UIPickerView DataSource & Delegate
     

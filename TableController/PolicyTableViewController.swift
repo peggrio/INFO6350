@@ -19,17 +19,6 @@ class PolicyTableViewController: UITableViewController, PolicyDataUpdateDelegate
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
         title = "Policies"
     }
-    
-//    // MARK: - Data Handling
-//    private func fetchPolicies() {
-//        // TODO: Implement API call or database fetch
-//        // For now, using sample data
-//        policies = [
-//            Policy(id: 1, customerId: 1, policyType: "Health Insurance", premiumAmount: 200.0, startDate: "2024-01-01", endDate: "2025-01-01"),
-//            Policy(id: 2, customerId: 2, policyType: "Life Insurance", premiumAmount: 150.0, startDate: "2024-03-01", endDate: "2034-03-01")
-//        ]
-//        tableView.reloadData()
-//    }
 
     // MARK: - Actions
     @IBAction func addPolicyTapped(_ sender: UIBarButtonItem) {
@@ -131,7 +120,7 @@ class PolicyTableViewController: UITableViewController, PolicyDataUpdateDelegate
     private func showDeleteFailedAlert() {
         let alert = UIAlertController(
             title: "Error",
-            message: "Failed to delete policy, cannot delete customer with ID because they have active policies.",
+            message: "Failed to delete policy, because it is still active.",
             preferredStyle: .alert
         )
         

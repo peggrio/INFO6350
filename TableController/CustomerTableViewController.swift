@@ -11,7 +11,7 @@ class CustomerTableViewController: UITableViewController, CustomerDataUpdateDele
     // MARK: - Lifecycle Methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        fetchCustomers()
+//        fetchCustomers()
         setupTableView()
     }
     
@@ -21,16 +21,16 @@ class CustomerTableViewController: UITableViewController, CustomerDataUpdateDele
         title = "Customers"
     }
     
-    // MARK: - Data Handling
-    private func fetchCustomers() {
-        // TODO: Implement API call or database fetch
-        // For now, using sample data
-        customers = [
-            Customer(id: 1, name: "John Doe", age: 13, email: "john@example.com"),
-            Customer(id: 2, name: "Jane Smith", age: 12, email: "jane@example.com")
-        ]
-        tableView.reloadData()
-    }
+//    // MARK: - Data Handling
+//    private func fetchCustomers() {
+//        // TODO: Implement API call or database fetch
+//        // For now, using sample data
+//        customers = [
+//            Customer(id: 1, name: "John Doe", age: 13, email: "john@example.com"),
+//            Customer(id: 2, name: "Jane Smith", age: 12, email: "jane@example.com")
+//        ]
+//        tableView.reloadData()
+//    }
 
     
     // MARK: - Actions
