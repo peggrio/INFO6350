@@ -109,7 +109,7 @@ class CustomerTableViewController: UITableViewController, CustomerDataUpdateDele
     private func showDeleteFailedAlert() {
         let alert = UIAlertController(
             title: "Error",
-            message: "Failed to delete customer",
+            message: "Failed to delete customer, customers with existing Insurance Policies cannot be deleted",
             preferredStyle: .alert
         )
         

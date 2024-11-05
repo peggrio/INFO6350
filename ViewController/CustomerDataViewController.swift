@@ -84,7 +84,7 @@ class CustomerDataViewController: UIViewController {
     }
     
     private func showAlert(message: String, style: AlertStyle = .error) {
-        let customAlert = CustomAlertView()
+        let customAlert = AlertView()
         customAlert.show(style: style, message: message, in: self, autoDismiss: style == .success)
     }
 }

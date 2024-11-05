@@ -35,10 +35,13 @@ class AddCustomerViewController: UIViewController {
         emailTextField.text = customer.email
     }
     
-    @IBAction func cancelButtonTapped(_ sender: UIButton) {
-        dismiss(animated: true)
-    }
-    
+    // MARK: - Actions
+//    
+//    @IBAction func cancelButtonTapped(_ sender: UIButton) {
+//        print("cancelButtonTapped")
+//        dismiss(animated: true)
+//    }
+//    
     @IBAction func saveButtonTapped(_ sender: UIButton) {
         guard let name = nameTextField.text, !name.isEmpty,
               let ageText = ageTextField.text, let age = Int(ageText),
@@ -89,7 +92,7 @@ class AddCustomerViewController: UIViewController {
     }
     
     private func showAlert(message: String, style: AlertStyle = .error) {
-        let customAlert = CustomAlertView()
+        let customAlert = AlertView()
         customAlert.show(style: style, message: message, in: self, autoDismiss: style == .success)
     }
 }

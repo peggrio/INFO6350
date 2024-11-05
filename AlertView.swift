@@ -32,7 +32,7 @@ enum AlertStyle {
     }
 }
 
-class CustomAlertView: UIView {
+class AlertView: UIView {
     // MARK: - UI Components
     private let containerView: UIView = {
         let view = UIView()
