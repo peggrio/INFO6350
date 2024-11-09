@@ -1,13 +1,6 @@
-//
-//  DeleteCustomerViewController.swift
-//  insurance_system05
-//
-//  Created by Peizhen Liao on 11/3/24.
-//
-
 import UIKit
 
-class DeleteCustomerViewController: UIViewController {
+class PaymentViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
