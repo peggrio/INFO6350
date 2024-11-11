@@ -23,7 +23,7 @@ class CustomerViewController: UIViewController {
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.borderStyle = .roundedRect
-        textField.keyboardType = .decimalPad
+        textField.keyboardType = .default
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
@@ -55,6 +55,7 @@ class CustomerViewController: UIViewController {
         setupConstraints()
         setupActions()
         populateData()
+        setupKeyboardToolbar()
     }
     
     private func setupUI() {
@@ -97,9 +98,35 @@ class CustomerViewController: UIViewController {
     
     private func populateData() {
         idLabel.text = "id: \(customer.id)"
-        emailLabel.text = "Email: \(customer.email)"
+        if let email = customer.email {
+            emailLabel.text = "Email: \(email)"
+        }
         nameTextField.text = customer.name
         ageTextField.text = String(customer.age)
+    }
+    
+    private func setupKeyboardToolbar() {
+        // Create toolbar
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        // Create flexible space to push the Done button to the right
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        // Create Done button
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        
+        // Add items to toolbar
+        toolbar.items = [flexSpace, doneButton]
+        
+        // Set toolbar as inputAccessoryView
+        nameTextField.inputAccessoryView = toolbar
+        ageTextField.inputAccessoryView = toolbar
+    }
+    
+    // MARK: - Actions
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
     }
     
     // MARK: - Actions

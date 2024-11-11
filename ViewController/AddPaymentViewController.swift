@@ -10,7 +10,7 @@ class AddPaymentViewController: UIViewController {
     var payment: Payment!
     
     private let methodOptions = ["Credit Card", "Bank Transfer", "Cash", "Check"]
-    private let statusOptions = ["Pending", "In Review", "Approved", "Rejected"]
+    private let statusOptions = ["Pending","Failed", "Cancelled", "Processed"]
     weak var delegate: PaymentUpdateDelegate?
     
     private let datePicker = UIDatePicker()

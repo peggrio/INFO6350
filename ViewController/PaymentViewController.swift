@@ -11,7 +11,7 @@ class PaymentViewController: UIViewController {
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     var payment: Payment!
-    private let statusOptions = ["Pending", "In Review", "Approved", "Rejected"]
+    private let statusOptions = ["Pending","Failed", "Cancelled", "Processed"]
     weak var delegate: PaymentUpdateDelegate?
     
     // MARK: - UI Elements
@@ -70,6 +70,7 @@ class PaymentViewController: UIViewController {
         setupConstraints()
         setupActions()
         populateData()
+        setupKeyboardToolbar()
     }
     
     // MARK: - Setup
@@ -151,6 +152,29 @@ class PaymentViewController: UIViewController {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
+    }
+    
+    private func setupKeyboardToolbar() {
+        // Create toolbar
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        // Create flexible space to push the Done button to the right
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        // Create Done button
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        
+        // Add items to toolbar
+        toolbar.items = [flexSpace, doneButton]
+        
+        // Set toolbar as inputAccessoryView
+        amountTextField.inputAccessoryView = toolbar
+    }
+    
+    // MARK: - Actions
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
     }
     
     // MARK: - Actions

@@ -66,7 +66,7 @@ class PolicyTableViewController: UITableViewController, PolicyUpdateDelegate, UI
             // If searching, add the search predicate
             if isFiltering {
                 let searchText = searchController.searchBar.text!
-                let predicate = NSPredicate(format: "id CONTAINS[cd] %d", searchText)
+                let predicate = NSPredicate(format: "id CONTAINS[cd] %@", searchText)
                 request.predicate = predicate
             }
             

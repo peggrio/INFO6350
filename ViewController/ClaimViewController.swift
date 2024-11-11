@@ -17,6 +17,7 @@ class ClaimViewController: UIViewController {
     // MARK: - UI Elements
     private let claimIDLabel: UILabel = {
         let label = UILabel()
+        label.font = .systemFont(ofSize: 17, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -59,6 +60,9 @@ class ClaimViewController: UIViewController {
     private let updateButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Update Claim", for: .normal)
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 10
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -70,6 +74,7 @@ class ClaimViewController: UIViewController {
         setupConstraints()
         setupActions()
         populateData()
+        setupKeyboardToolbar()
     }
     
     // MARK: - Setup
@@ -90,7 +95,6 @@ class ClaimViewController: UIViewController {
     }
     
     private func setupConstraints() {
-        // Constants for layout
         let padding: CGFloat = 20
         let spacing: CGFloat = 15
         
@@ -103,6 +107,7 @@ class ClaimViewController: UIViewController {
             // Amount Label
             amountLabel.topAnchor.constraint(equalTo: claimIDLabel.bottomAnchor, constant: spacing * 2),
             amountLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
+            amountLabel.widthAnchor.constraint(equalToConstant: 120), // Fixed width for label
             
             // Amount TextField
             amountTextField.centerYAnchor.constraint(equalTo: amountLabel.centerYAnchor),
@@ -127,11 +132,22 @@ class ClaimViewController: UIViewController {
             statusPicker.heightAnchor.constraint(equalToConstant: 150),
             
             // Update Button
-            updateButton.topAnchor.constraint(equalTo: statusPicker.bottomAnchor, constant: spacing * 2),
-            updateButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            updateButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
-            updateButton.heightAnchor.constraint(equalToConstant: 44)
+            updateButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -padding),
+            updateButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
+            updateButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            updateButton.heightAnchor.constraint(equalToConstant: 50)
         ])
+    }
+    
+    private func setupKeyboardToolbar() {
+        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 44))
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        
+        toolbar.items = [flexSpace, doneButton]
+        toolbar.sizeToFit()
+        
+        amountTextField.inputAccessoryView = toolbar
     }
     
     private func setupActions() {
@@ -139,9 +155,10 @@ class ClaimViewController: UIViewController {
     }
     
     private func populateData() {
+        claimIDLabel.text = "Claim ID: #\(claim.id)"
         amountTextField.text = String(format: "%.2f", claim.claim_amount)
         dateLabel.text = "Date of Claim: \(formatDate(claim.date_Of_claim))"
-        if let statusIndex = statusOptions.firstIndex(of: claim.status!) {
+        if let statusIndex = statusOptions.firstIndex(of: claim.status ?? "") {
             statusPicker.selectRow(statusIndex, inComponent: 0, animated: false)
         }
     }
@@ -154,8 +171,11 @@ class ClaimViewController: UIViewController {
     }
     
     // MARK: - Actions
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
+    }
+    
     @objc private func updateClaimTapped() {
-        
         guard let amountText = amountTextField.text,
               let amount = Double(amountText) else {
             showAlert(message: "Please enter a valid amount")
@@ -164,19 +184,13 @@ class ClaimViewController: UIViewController {
         
         let status = statusOptions[statusPicker.selectedRow(inComponent: 0)]
         
-        // Updating the claim
         claim.claim_amount = amount
         claim.status = status
         
         do {
             try context.save()
-            
-            // Notify delegate
             delegate?.didUpdateClaim(claim)
             navigationController?.popViewController(animated: true)
-            
-            // Log
-            print("Claim \(claim.id) updated")
         } catch {
             print("Error updating the claim: \(error)")
             showAlert(message: "Failed to update claim")
@@ -189,7 +203,7 @@ class ClaimViewController: UIViewController {
     }
 }
 
-// MARK: - UIPickerView Extensions for ClaimDetailViewController
+// MARK: - UIPickerView Extensions
 extension ClaimViewController: UIPickerViewDelegate, UIPickerViewDataSource {
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1

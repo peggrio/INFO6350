@@ -105,6 +105,7 @@ class PolicyViewController: UIViewController {
         setupConstraints()
         setupActions()
         populateData()
+        setupKeyboardToolbar()
     }
     
     private func setupUI() {
@@ -203,6 +204,31 @@ class PolicyViewController: UIViewController {
         formatter.dateStyle = .medium
         return formatter.string(from: date)
     }
+    
+    private func setupKeyboardToolbar() {
+        // Create toolbar
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        // Create flexible space to push the Done button to the right
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        // Create Done button
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        
+        // Add items to toolbar
+        toolbar.items = [flexSpace, doneButton]
+        
+        // Set toolbar as inputAccessoryView
+        typeTextField.inputAccessoryView = toolbar
+        premiumTextField.inputAccessoryView = toolbar
+    }
+    
+    // MARK: - Actions
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
+    }
+    
     
     // MARK: - Actions
     @objc private func updatePolicyTapped() {

@@ -193,8 +193,9 @@ class AddPolicyViewController: UIViewController {
         toolbar.items = [flexSpace, doneButton]
         
         // Set toolbar as inputAccessoryView
-        premiumTextField.inputAccessoryView = toolbar
         customerIdTextField.inputAccessoryView = toolbar
+        typeTextField.inputAccessoryView = toolbar
+        premiumTextField.inputAccessoryView = toolbar
     }
     
     // MARK: - Actions

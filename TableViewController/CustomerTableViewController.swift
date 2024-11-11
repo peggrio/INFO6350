@@ -132,17 +132,60 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
             
             guard let customer = customerToRemove else { return }
             
-            self.context.delete(customer)
+            //Customers with existing Insurance Policies cannot be deleted.
+            let fetchRequest: NSFetchRequest<Policy> = Policy.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "customer_id == %d", customer.id)
             
             do {
-                print("\(customer.name ?? "") deleted")
+                let policies = try context.fetch(fetchRequest)
+                
+                if !policies.isEmpty {
+                    // Show alert that customer cannot be deleted
+                    showDeleteFailedAlert()
+                    return  // Exit the method without deleting
+                }
+            
+                self.context.delete(customer)
+                
                 try self.context.save()
+                customers?.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .fade)
+                showDeleteSuccessAlert()
+                
+                //log
+                print("\(customer.name ?? "") deleted")
             } catch {
                 print("Error deleting customers: \(error)")
             }
-            
-            self.fetchCustomers()
         }
+        
+    }
+    
+    private func showDeleteSuccessAlert() {
+        let alert = UIAlertController(
+            title: "Success",
+            message: "Policy deleted successfully",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            // Pop back to previous view controller
+            self?.navigationController?.popViewController(animated: true)
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func showDeleteFailedAlert() {
+        let alert = UIAlertController(
+            title: "Error",
+            message: "Failed to delete customer. Customers with existing Insurance Policies cannot be deleted",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        present(alert, animated: true)
     }
     
     

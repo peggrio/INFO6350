@@ -143,7 +143,9 @@ class PaymentTableViewController: UITableViewController, PaymentUpdateDelegate, 
         let payment = payments[indexPath.row]
         var content = cell.defaultContentConfiguration()
         content.text = "Payment #\(payment.id)"
-        content.secondaryText = "Amount: $\(payment.payment_amount) - Status: \(payment.status)"
+        if let status = payment.status{
+            content.secondaryText = "Amount: $\(payment.payment_amount) - Status: \(status)"
+        }
         cell.contentConfiguration = content
         
         return cell
@@ -177,6 +179,11 @@ class PaymentTableViewController: UITableViewController, PaymentUpdateDelegate, 
             }
             
             let paymentToDelete = payments[indexPath.row]
+            //Approved claims cannot be deleted
+            if paymentToDelete.status!.lowercased() == "processed"{
+                showDeleteFailedAlert()
+                return // Exit the method without deleting
+            }
             context.delete(paymentToDelete)
             
             do {
@@ -184,10 +191,38 @@ class PaymentTableViewController: UITableViewController, PaymentUpdateDelegate, 
                 mutablePayments.remove(at: indexPath.row)
                 self.payments = mutablePayments
                 tableView.deleteRows(at: [indexPath], with: .fade)
+                showDeleteSuccessAlert()
             } catch {
                 print("Error deleting payment: \(error)")
             }
         }
+    }
+    
+    private func showDeleteSuccessAlert() {
+        let alert = UIAlertController(
+            title: "Success",
+            message: "Payment deleted successfully",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            // Pop back to previous view controller
+            self?.navigationController?.popViewController(animated: true)
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func showDeleteFailedAlert() {
+        let alert = UIAlertController(
+            title: "Error",
+            message: "Proccessed payment cannot be deleted.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        present(alert, animated: true)
     }
 }
 

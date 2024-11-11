@@ -143,7 +143,9 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
         let claim = claims[indexPath.row]
         var content = cell.defaultContentConfiguration()
         content.text = "Claim #\(claim.id)"
-        content.secondaryText = "Amount: $\(claim.claim_amount) - Status: \(claim.status)"
+        if let status = claim.status {
+            content.secondaryText = "Amount: $\(claim.claim_amount) - Status: \(status)"
+        }
         cell.contentConfiguration = content
         
         return cell
@@ -177,6 +179,12 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
             }
             
             let claimToDelete = claims[indexPath.row]
+            
+            //Approved claims cannot be deleted
+            if claimToDelete.status!.lowercased() == "approved"{
+                showDeleteFailedAlert()
+                return // Exit the method without deleting
+            }
             context.delete(claimToDelete)
             
             do {
@@ -184,10 +192,38 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
                 mutableClaims.remove(at: indexPath.row)
                 self.claims = mutableClaims
                 tableView.deleteRows(at: [indexPath], with: .fade)
+                showDeleteSuccessAlert()
             } catch {
                 print("Error deleting claim: \(error)")
             }
         }
+    }
+    
+    private func showDeleteSuccessAlert() {
+        let alert = UIAlertController(
+            title: "Success",
+            message: "Claim deleted successfully",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            // Pop back to previous view controller
+            self?.navigationController?.popViewController(animated: true)
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func showDeleteFailedAlert() {
+        let alert = UIAlertController(
+            title: "Error",
+            message: "Approved claims cannot be deleted.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        present(alert, animated: true)
     }
 }
 
