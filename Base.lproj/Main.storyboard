@@ -197,7 +197,9 @@
                             <outlet property="delegate" destination="vvz-ab-oqN" id="MaZ-bO-AnH"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="m9T-F7-Xh4"/>
+                    <navigationItem key="navigationItem" id="m9T-F7-Xh4">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="jY5-MC-Aav"/>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Rf4-O8-gh2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -271,7 +273,9 @@
                             <outlet property="delegate" destination="C4T-7a-Rqf" id="qCy-Nk-mRh"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="i0V-KG-GBT"/>
+                    <navigationItem key="navigationItem" id="i0V-KG-GBT">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="Vg1-Da-lMT"/>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qWo-I7-J76" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

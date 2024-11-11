@@ -41,7 +41,7 @@ class AddPolicyViewController: UIViewController {
         let textField = UITextField()
         textField.borderStyle = .roundedRect
         textField.placeholder = "Enter customer ID"
-        textField.keyboardType = .decimalPad
+        textField.keyboardType = .numberPad
         return textField
     }()
     
@@ -119,7 +119,7 @@ class AddPolicyViewController: UIViewController {
         setupConstraints()
         setupActions()
         setupDatePicker()
-        setupKeyboardHandling()
+        setupKeyboardToolbar()
         
         if let customer = customer {
             customerIdTextField.text = String(customer.id)
@@ -178,12 +178,28 @@ class AddPolicyViewController: UIViewController {
         endDateTextField.inputAccessoryView = toolbar
     }
     
-    private func setupKeyboardHandling() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
-        view.addGestureRecognizer(tapGesture)
+    private func setupKeyboardToolbar() {
+        // Create toolbar
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        // Create flexible space to push the Done button to the right
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        // Create Done button
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        
+        // Add items to toolbar
+        toolbar.items = [flexSpace, doneButton]
+        
+        // Set toolbar as inputAccessoryView
+        premiumTextField.inputAccessoryView = toolbar
+        customerIdTextField.inputAccessoryView = toolbar
+    }
+    
+    // MARK: - Actions
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
     }
     
     private func createFieldStack(label: UILabel, field: UITextField) -> UIStackView {

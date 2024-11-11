@@ -93,7 +93,7 @@ class PolicyViewController: UIViewController {
     
     private let viewPaymentButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("View Policies", for: .normal)
+        button.setTitle("View Payments", for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -114,6 +114,7 @@ class PolicyViewController: UIViewController {
         view.addSubview(policyIDLabel)
         view.addSubview(typeLabel)
         view.addSubview(typeTextField)
+        view.addSubview(premiumLabel)
         view.addSubview(premiumTextField)
         view.addSubview(startDateLabel)
         view.addSubview(endDateLabel)
@@ -125,30 +126,60 @@ class PolicyViewController: UIViewController {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
+            // Policy ID Label
             policyIDLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             policyIDLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             policyIDLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            typeTextField.topAnchor.constraint(equalTo: policyIDLabel.bottomAnchor, constant: 20),
+            // Type Label and TextField
+            typeLabel.topAnchor.constraint(equalTo: policyIDLabel.bottomAnchor, constant: 20),
+            typeLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            typeLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            typeTextField.topAnchor.constraint(equalTo: typeLabel.bottomAnchor, constant: 8),
             typeTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             typeTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            premiumTextField.topAnchor.constraint(equalTo: typeTextField.bottomAnchor, constant: 20),
+            // Premium Label and TextField
+            premiumLabel.topAnchor.constraint(equalTo: typeTextField.bottomAnchor, constant: 20),
+            premiumLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            premiumLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            premiumTextField.topAnchor.constraint(equalTo: premiumLabel.bottomAnchor, constant: 8),
             premiumTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             premiumTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
+            // Start Date Label
             startDateLabel.topAnchor.constraint(equalTo: premiumTextField.bottomAnchor, constant: 20),
             startDateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            
+            startDateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+
+            // End Date Label and Picker
             endDateLabel.topAnchor.constraint(equalTo: startDateLabel.bottomAnchor, constant: 20),
             endDateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            endDateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            endDatePicker.centerYAnchor.constraint(equalTo: endDateLabel.centerYAnchor),
-            endDatePicker.leadingAnchor.constraint(equalTo: endDateLabel.trailingAnchor, constant: 10),
-            endDatePicker.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20),
+            endDatePicker.topAnchor.constraint(equalTo: endDateLabel.bottomAnchor, constant: 8),
+            endDatePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            endDatePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
+            // Update Button
             updateButton.topAnchor.constraint(equalTo: endDatePicker.bottomAnchor, constant: 40),
-            updateButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            updateButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            updateButton.widthAnchor.constraint(equalToConstant: 200),
+            updateButton.heightAnchor.constraint(equalToConstant: 44),
+            
+            // View Claim Button
+            viewClaimButton.topAnchor.constraint(equalTo: updateButton.bottomAnchor, constant: 20),
+            viewClaimButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            viewClaimButton.widthAnchor.constraint(equalToConstant: 200),
+            viewClaimButton.heightAnchor.constraint(equalToConstant: 44),
+            
+            // View Payment Button
+            viewPaymentButton.topAnchor.constraint(equalTo: viewClaimButton.bottomAnchor, constant: 20),
+            viewPaymentButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            viewPaymentButton.widthAnchor.constraint(equalToConstant: 200),
+            viewPaymentButton.heightAnchor.constraint(equalToConstant: 44)
         ])
     }
     
@@ -216,6 +247,11 @@ class PolicyViewController: UIViewController {
         // log
         print("view claim tapped")
         
+        guard let policy = policy else {
+            print("Error: No policy available")
+            return
+        }
+    
         if let claimsVC = storyboard?.instantiateViewController(withIdentifier: "ClaimTableViewController") as? ClaimTableViewController {
             // Pass the data
             claimsVC.policy = policy
@@ -230,11 +266,14 @@ class PolicyViewController: UIViewController {
         // log
         print("view payment tapped")
         
-//        let paymentsVC = storyboard?.instantiateViewController(withIdentifier: "PaymentTableViewController") as? PaymentTableViewController {
-//            // Pass the data
-//            paymentsVC.policyId = Int(policyId)
-//            navigationController?.pushViewController(paymentsVC, animated: true)
-//        }
+        if let paymentsVC = storyboard?.instantiateViewController(withIdentifier: "PaymentTableViewController") as? PaymentTableViewController {
+            // Pass the data
+            paymentsVC.policy = policy
+            paymentsVC.policyId = Int(policy.id)
+            
+            // Push the view controller
+            navigationController?.pushViewController(paymentsVC, animated: true)
+        }
     }
     
     private func showAlert(message: String, style: AlertStyle = .error) {

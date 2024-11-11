@@ -127,16 +127,50 @@ class PolicyTableViewController: UITableViewController, PolicyUpdateDelegate, UI
         if editingStyle == .delete {
             guard let policyToDelete = policies?[indexPath.row] else { return }
             
+            //Active policies cannot be deleted.
+            if let endDate = policyToDelete.end_date, endDate > Date() {
+                showDeleteFailedAlert()
+                return  // Exit the method without deleting
+            }
+            
             context.delete(policyToDelete)
             
             do {
                 try context.save()
                 policies?.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .fade)
+                showDeleteSuccessAlert()
             } catch {
                 print("Error deleting policy: \(error)")
             }
         }
+    }
+    
+    private func showDeleteSuccessAlert() {
+        let alert = UIAlertController(
+            title: "Success",
+            message: "Policy deleted successfully",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            // Pop back to previous view controller
+            self?.navigationController?.popViewController(animated: true)
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func showDeleteFailedAlert() {
+        let alert = UIAlertController(
+            title: "Error",
+            message: "Failed to delete policy, because it is still active.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        present(alert, animated: true)
     }
 }
 

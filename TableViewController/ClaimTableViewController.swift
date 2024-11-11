@@ -9,15 +9,12 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
+    var policy: Policy?
     var policyId: Int?
-    var policyType: String?
-    var claims: [Claim]?
-    var policy: Policy? {
-        didSet {
-            fetchClaims()
-        }
-    }
-    var filteredClaims: [Claim]?
+   
+    var claims: [Claim]? = [] // Initialize as empty array
+    var filteredClaims: [Claim]? = [] // Initialize as empty array
+    
     private var searchText: String = ""
     
     var isSearchBarEmpty: Bool {
@@ -31,7 +28,15 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Add debug print to check policy
+        if let policy = policy {
+            print("Policy is set with ID: \(policy.id)")
+        } else {
+            print("Warning: Policy is nil in viewDidLoad")
+        }
+        
         setupTableView()
+        setupSearchController()
         fetchClaims()
     }
     
@@ -39,6 +44,14 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
     private func setupTableView() {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
         title = "Claims"
+        
+        // Add new claim button
+        let addButton = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(addClaimTapped)
+        )
+        navigationItem.rightBarButtonItem = addButton
     }
     
     func setupSearchController() {
@@ -56,18 +69,27 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
     }
     
     func fetchClaims() {
-        guard let policy = policy else { return }
+        // Safely unwrap policy ID
+        guard let policyId = policy?.id else {
+            print("Error: No policy ID available")
+            return
+        }
         
         do {
             let request = Claim.fetchRequest() as NSFetchRequest<Claim>
-            request.predicate = NSPredicate(format: "policy_id = %d", policyId!)
-            request.sortDescriptors = [NSSortDescriptor(key: "id", ascending: true)]
+            
             // If searching, add the search predicate
             if isFiltering {
                 let searchText = searchController.searchBar.text!
-                let predicate = NSPredicate(format: "id CONTAINS[cd] %d", searchText)
-                request.predicate = predicate
+                let policyPredicate = NSPredicate(format: "policy_id == %@", NSNumber(value: policyId))
+                let searchPredicate = NSPredicate(format: "id CONTAINS[cd] %@", searchText)
+                let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [policyPredicate, searchPredicate])
+                request.predicate = compoundPredicate
+            } else {
+                request.predicate = NSPredicate(format: "policy_id == %@", NSNumber(value: policyId))
             }
+            
+            request.sortDescriptors = [NSSortDescriptor(key: "id", ascending: true)]
             
             let results = try context.fetch(request)
             
@@ -75,10 +97,7 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
                 self.filteredClaims = results
             } else {
                 self.claims = results
-                self.filteredClaims = results
             }
-            
-            filteredClaims = try context.fetch(request)
             
             DispatchQueue.main.async {
                 self.tableView.reloadData()
@@ -94,27 +113,38 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
         // Navigate to add policy view controller
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let addClaimVC = storyboard.instantiateViewController(withIdentifier: "AddClaimViewController") as? AddClaimViewController {
-            addClaimVC.claim = claims
             addClaimVC.delegate = self
+            addClaimVC.policyId = policyId
             navigationController?.pushViewController(addClaimVC, animated: true)
         }
     }
     
     // MARK: - UITableViewDataSource
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if isFiltering {
+            return filteredClaims?.count ?? 0
+        }
         return claims?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
         
-        if let claim = claims?[indexPath.row] {
-            // Configure cell with claim details
+        let claimArray = isFiltering ? filteredClaims : claims
+        
+        guard let claims = claimArray, indexPath.row < claims.count else {
+            // Return empty cell if claims array is nil or index out of bounds
             var content = cell.defaultContentConfiguration()
-            content.text = "Claim #\(claim.id)"
-            content.secondaryText = "Amount: $\(claim.claim_amount) - Status: \(claim.status)"
+            content.text = "No data available"
             cell.contentConfiguration = content
+            return cell
         }
+        
+        let claim = claims[indexPath.row]
+        var content = cell.defaultContentConfiguration()
+        content.text = "Claim #\(claim.id)"
+        content.secondaryText = "Amount: $\(claim.claim_amount) - Status: \(claim.status)"
+        cell.contentConfiguration = content
         
         return cell
     }
@@ -123,26 +153,36 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if let claim = claims?[indexPath.row] {
-            // Navigate to claim details view controller
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            if let claimVC = storyboard.instantiateViewController(withIdentifier: "ClaimViewController") as? ClaimViewController {
-                claimVC.claim = claim
-                claimVC.delegate = self
-                navigationController?.pushViewController(claimVC, animated: true)
-            }
+        let claimArray = isFiltering ? filteredClaims : claims
+        guard let claims = claimArray, indexPath.row < claims.count else {
+            return
+        }
+        
+        let claim = claims[indexPath.row]
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let claimVC = storyboard.instantiateViewController(withIdentifier: "ClaimViewController") as? ClaimViewController {
+            claimVC.claim = claim
+            claimVC.delegate = self
+            navigationController?.pushViewController(claimVC, animated: true)
         }
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            guard let claimToDelete = claims?[indexPath.row] else { return }
+            let claimArray = isFiltering ? filteredClaims : claims
+            guard let claims = claimArray,
+                  indexPath.row < claims.count,
+                  var mutableClaims = self.claims else {
+                return
+            }
             
+            let claimToDelete = claims[indexPath.row]
             context.delete(claimToDelete)
             
             do {
                 try context.save()
-                claims?.remove(at: indexPath.row)
+                mutableClaims.remove(at: indexPath.row)
+                self.claims = mutableClaims
                 tableView.deleteRows(at: [indexPath], with: .fade)
             } catch {
                 print("Error deleting claim: \(error)")

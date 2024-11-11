@@ -83,6 +83,7 @@ class AddCustomerViewController: UIViewController {
         setupUI()
         setupConstraints()
         setupActions()
+        setupKeyboardToolbar()
     }
     
     // MARK: - Setup
@@ -128,6 +129,31 @@ class AddCustomerViewController: UIViewController {
     
     private func setupActions() {
         addButton.addTarget(self, action: #selector(addCustomerTapped), for: .touchUpInside)
+    }
+    
+    private func setupKeyboardToolbar() {
+        // Create toolbar
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        // Create flexible space to push the Done button to the right
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        // Create Done button
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        
+        // Add items to toolbar
+        toolbar.items = [flexSpace, doneButton]
+        
+        // Set toolbar as inputAccessoryView
+        nameTextField.inputAccessoryView = toolbar
+        ageTextField.inputAccessoryView = toolbar
+        emailTextField.inputAccessoryView = toolbar
+    }
+    
+    // MARK: - Actions
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
     }
     
     // MARK: - Helper Methods

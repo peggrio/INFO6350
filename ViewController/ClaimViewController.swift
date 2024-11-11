@@ -1,6 +1,7 @@
 import UIKit
 
 protocol ClaimUpdateDelegate: AnyObject {
+    func didAddClaim(_ claim: Claim)
     func didUpdateClaim(_ claim: Claim)
 }
 
@@ -81,6 +82,7 @@ class ClaimViewController: UIViewController {
         
         view.addSubview(claimIDLabel)
         view.addSubview(amountLabel)
+        view.addSubview(amountTextField)
         view.addSubview(dateLabel)
         view.addSubview(statusLabel)
         view.addSubview(statusPicker)
