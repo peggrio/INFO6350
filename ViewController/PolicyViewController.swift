@@ -191,7 +191,10 @@ class PolicyViewController: UIViewController {
     }
     
     private func populateData() {
-        policyIDLabel.text = "Policy ID: \(policy.id)"
+        
+        let id = policy.id ?? ""
+        
+        policyIDLabel.text = "Policy ID: \(id)"
         typeTextField.text = policy.type
         premiumTextField.text = String(format: "%.2f", policy.premium_amount)
         startDateLabel.text = "Start Date: \(formatDate(policy.start_date))"

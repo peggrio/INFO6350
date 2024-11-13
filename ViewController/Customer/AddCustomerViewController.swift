@@ -177,7 +177,10 @@ class AddCustomerViewController: UIViewController {
         do {
             let customers = try context.fetch(fetchRequest)
             if let lastCustomer = customers.first {
-                return String(Int(bitPattern: lastCustomer.id) + 1)
+                // Convert string to integer, increment, then convert back to string
+                if let currentId = Int(lastCustomer.id ?? "0") {
+                    return String(currentId + 1)
+                }
             }
             return "1" // Start with 1 if no customers exist
         } catch {

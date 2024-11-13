@@ -259,7 +259,10 @@ class AddPolicyViewController: UIViewController {
         do {
             let policies = try context.fetch(fetchRequest)
             if let lastPolicy = policies.first {
-                return String(Int(bitPattern: lastPolicy.id) + 1)
+                // Convert string to integer, increment, then convert back to string
+                if let currentId = Int(lastPolicy.id ?? "0") {
+                    return String(currentId + 1)
+                }
             }
             return "1" // Start with 1 if no customers exist
         } catch {
@@ -302,7 +305,7 @@ class AddPolicyViewController: UIViewController {
 //            }
 //            
             let request = Customer.fetchRequest()
-            request.predicate = NSPredicate(format: "id == %d", customerId)
+            request.predicate = NSPredicate(format: "id == %@", customerId)
             
             do {
                 let results = try context.fetch(request)

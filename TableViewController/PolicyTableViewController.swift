@@ -8,8 +8,9 @@ class PolicyTableViewController: UITableViewController, PolicyUpdateDelegate, UI
     let searchController = UISearchController(searchResultsController: nil)
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    private let apiService = APIService()
     
-    var customer: Customer? // Reference to the selected customer
+    var policy: Policy? // Reference to the selected customer
     var policies: [Policy]? // Array to hold the policies
     var filteredPolicies: [Policy]?
     private var searchText: String = ""
@@ -26,7 +27,11 @@ class PolicyTableViewController: UITableViewController, PolicyUpdateDelegate, UI
         
         setupTableView()
         setupSearchController()
-        fetchPolicies()
+        
+        // Create a Task to handle async work
+        Task {
+            await fetchPoliciesFromAPI()
+        }
     }
     
     private func setupTableView() {
@@ -46,6 +51,72 @@ class PolicyTableViewController: UITableViewController, PolicyUpdateDelegate, UI
         
         // Define the scope bar
         definesPresentationContext = true
+    }
+    
+    func fetchLocalPolicies(){
+        Task { @MainActor in
+            do {
+                let request = Policy.fetchRequest() as NSFetchRequest<Policy>
+                
+                // If searching, add the search predicate
+                if isFiltering {
+                    let searchText = searchController.searchBar.text!
+                    let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
+                    request.predicate = predicate
+                }
+                
+                let results = try context.fetch(request)
+                
+                if isFiltering {
+                    self.filteredPolicies = results
+                } else {
+                    self.policies = results
+                    self.filteredPolicies = results
+                }
+                
+                self.tableView.reloadData()
+            } catch {
+                print("Error fetching policys: \(error)")
+            }
+        }
+    }
+    
+    func fetchPoliciesFromAPI() async {
+        do {
+            let dtos = try await apiService.populatePolicies()
+            
+            // Save to CoreData
+            await MainActor.run {
+                for dto in dtos {
+                    let fetchRequest: NSFetchRequest<Policy> = Policy.fetchRequest()
+                    fetchRequest.predicate = NSPredicate(format: "id == %d", dto.id)
+                    
+                    do {
+                        let existingPolicys = try context.fetch(fetchRequest)
+                        if let existingPolicy = existingPolicys.first {
+                            // Update existing policy
+                            existingPolicy.type = dto.type
+                            existingPolicy.start_date = dto.start_date
+                            existingPolicy.end_date = dto.end_date
+                            existingPolicy.premium_amount = dto.premium_amount
+                            existingPolicy.customer_id = dto.customer_id
+
+                        } else {
+                            // Create new policy
+                            _ = Policy.fromDTO(dto, context: context)
+                        }
+                        
+                        try context.save()
+                    } catch {
+                        print("Error saving policy: \(error)")
+                    }
+                }
+                
+                fetchLocalPolicies()
+            }
+        } catch {
+            print("Error fetching policys from API: \(error)")
+        }
     }
     
     //Add function
@@ -100,7 +171,8 @@ class PolicyTableViewController: UITableViewController, PolicyUpdateDelegate, UI
         
         if let policy = policies?[indexPath.row] {
             // Configure cell with policy details
-            cell.textLabel?.text = "#\(policy.id) - \(policy.type ?? "")"
+            let id = policy.id ?? ""
+            cell.textLabel?.text = "#\(id) - \(policy.type ?? "")"
             cell.detailTextLabel?.text = "Premium: $\(policy.premium_amount)"
         }
         

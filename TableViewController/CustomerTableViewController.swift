@@ -7,7 +7,7 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
     let searchController = UISearchController(searchResultsController: nil)
 
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    private let apiService = CustomerAPIService()
+    private let apiService = APIService()
     
     var customers: [Customer]?
     var filteredCustomers: [Customer]?
@@ -122,11 +122,6 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
     }
     
     // MARK: - UISearchBarDelegate
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        fetchLocalCustomers()
-        searchBar.resignFirstResponder()
-    }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         // Fetch results as user types

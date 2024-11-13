@@ -143,9 +143,8 @@ class CustomerViewController: UIViewController {
     private func populateData() {
         
         if let customer = customer {
-            print("name:\(customer.name)")
-            print("url:\(customer.profilePictureUrl)")
-            idLabel.text = "id: \(customer.id)"
+            let id = customer.id ?? ""
+            idLabel.text = "id: \(id)"
             if let email = customer.email {
                 emailLabel.text = "Email: \(email)"
             }
