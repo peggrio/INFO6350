@@ -7,7 +7,6 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
     let searchController = UISearchController(searchResultsController: nil)
 
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-//    let viewModel = CustomerViewModel()
     private let apiService = CustomerAPIService()
     
     var customers: [Customer]?
@@ -91,9 +90,10 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
             // Save to CoreData
             await MainActor.run {
                 for dto in dtos {
-                    print("age: \(dto.age)")
-                    print("age: \(dto.profilePictureUrl)")
-                    // Check if customer already exists
+                    // Check if customer already existspo0
+                    
+                    print("url:\(dto.profilePictureUrl)")
+                    
                     let fetchRequest: NSFetchRequest<Customer> = Customer.fetchRequest()
                     fetchRequest.predicate = NSPredicate(format: "id == %d", dto.id)
                     
@@ -151,7 +151,7 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let customer = self.customers![indexPath.row]
-        
+
         // Create and configure the details view controller
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let customerVC = storyboard.instantiateViewController(withIdentifier: "CustomerViewController") as? CustomerViewController {
@@ -240,9 +240,9 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
         return customers?.count ?? 0
     }
 
+    //present the detail
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-//        let cell = tableView.dequeueReusableCell(withIdentifier: "CustomerCell", for: indexPath) as! CustomerCell
         let cell = tableView.dequeueReusableCell(withIdentifier: "CustomerCell", for: indexPath)
         let customer: Customer?
         if isFiltering {
