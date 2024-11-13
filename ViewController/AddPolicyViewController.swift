@@ -122,7 +122,7 @@ class AddPolicyViewController: UIViewController {
         setupKeyboardToolbar()
         
         if let customer = customer {
-            customerIdTextField.text = String(customer.id)
+            customerIdTextField.text = Optional(customer.id ?? "")
             customerIdTextField.isEnabled = false
         }
     }
@@ -251,7 +251,7 @@ class AddPolicyViewController: UIViewController {
     }
     
     // MARK: - Helper Methods
-    private func getNextPolicyId() -> Int64 {
+    private func getNextPolicyId() -> String {
         let fetchRequest: NSFetchRequest<Policy> = Policy.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "id", ascending: false)]
         fetchRequest.fetchLimit = 1
@@ -259,18 +259,19 @@ class AddPolicyViewController: UIViewController {
         do {
             let policies = try context.fetch(fetchRequest)
             if let lastPolicy = policies.first {
-                return lastPolicy.id + 1
+                return String(Int(bitPattern: lastPolicy.id) + 1)
             }
-            return 1 // Start with 1 if no customers exist
+            return "1" // Start with 1 if no customers exist
         } catch {
             print("Error fetching last customer ID: \(error)")
-            return 1
+            return "1"
         }
     }
     
     // MARK: - Actions
     @objc private func addPolicyTapped() {
-        guard let customerIdText = customerIdTextField.text, let customerId = Int64(customerIdText),
+        guard let customerIdText = customerIdTextField.text, 
+                let customerId = Optional(customerIdText),
             let type = typeTextField.text, !type.isEmpty,
             let premiumText = premiumTextField.text, 
             let premium = Double(premiumText),
@@ -295,7 +296,7 @@ class AddPolicyViewController: UIViewController {
         // If we don't have a pre-selected customer, validate the customer ID
         if customer == nil {
 //            guard let customerIdText = customerIdTextField.text,
-//                  let customerId = Int64(customerIdText) else {
+//                  let customerId = String(customerIdText) else {
 //                showAlert(message: "Invalid customer ID format")
 //                return
 //            }
@@ -325,7 +326,7 @@ class AddPolicyViewController: UIViewController {
         newPolicy.start_date = startDate
         newPolicy.end_date = endDate
         newPolicy.customer = customer
-        newPolicy.customer_id = customer?.id ?? 0
+        newPolicy.customer_id = customer?.id ?? "0"
         
         // Save the data
         do {

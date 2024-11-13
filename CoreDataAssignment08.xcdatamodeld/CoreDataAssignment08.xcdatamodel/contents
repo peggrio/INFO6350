@@ -3,31 +3,32 @@
     <entity name="Claim" representedClassName="Claim" syncable="YES">
         <attribute name="claim_amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="date_Of_claim" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="policy_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="String"/>
+        <attribute name="policy_id" attributeType="String"/>
         <attribute name="status" attributeType="String"/>
         <relationship name="policy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Policy" inverseName="claim" inverseEntity="Policy"/>
     </entity>
     <entity name="Customer" representedClassName="Customer" syncable="YES">
         <attribute name="age" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="email" attributeType="String"/>
-        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
+        <attribute name="profilePictureUrl" optional="YES" attributeType="String"/>
         <relationship name="policy" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Policy" inverseName="customer" inverseEntity="Policy"/>
     </entity>
     <entity name="Payment" representedClassName="Payment" syncable="YES">
-        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="String"/>
         <attribute name="payment_amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="payment_date" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="payment_method" attributeType="String"/>
-        <attribute name="policy_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="policy_id" attributeType="String"/>
         <attribute name="status" attributeType="String"/>
         <relationship name="policy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Policy" inverseName="payment" inverseEntity="Policy"/>
     </entity>
     <entity name="Policy" representedClassName="Policy" syncable="YES">
-        <attribute name="customer_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="customer_id" attributeType="String"/>
         <attribute name="end_date" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="String"/>
         <attribute name="premium_amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="start_date" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="type" attributeType="String"/>

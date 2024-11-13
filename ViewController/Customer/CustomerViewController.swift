@@ -149,7 +149,7 @@ class CustomerViewController: UIViewController {
             navigationController?.popViewController(animated: true)
             
             //log
-            print("\(customer.name) updated")
+            print("\(String(describing: customer.name)) updated")
         }catch{
             print("Error add the customer: \(error)")
             showAlert(message: "Failed to update customer")

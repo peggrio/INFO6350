@@ -6,7 +6,7 @@ class AddPaymentViewController: UIViewController {
     // MARK: Properties
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    var policyId: Int!
+    var policyId: String!
     var payment: Payment!
     
     private let methodOptions = ["Credit Card", "Bank Transfer", "Cash", "Check"]
@@ -191,7 +191,7 @@ class AddPaymentViewController: UIViewController {
     }
     
     // MARK: - Helper Methods
-    private func getNextPaymentId() -> Int64 {
+    private func getNextPaymentId() -> String {
         let fetchRequest: NSFetchRequest<Payment> = Payment.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "id", ascending: false)]
         fetchRequest.fetchLimit = 1
@@ -199,12 +199,12 @@ class AddPaymentViewController: UIViewController {
         do {
             let payments = try context.fetch(fetchRequest)
             if let lastPayment = payments.first {
-                return lastPayment.id + 1
+                return String(Int(bitPattern: lastPayment.id) + 1)
             }
-            return 1 // Start with 1 if no customers exist
+            return "1" // Start with 1 if no customers exist
         } catch {
             print("Error fetching last payment ID: \(error)")
-            return 1
+            return "1"
         }
     }
     
@@ -232,7 +232,7 @@ class AddPaymentViewController: UIViewController {
         //add the payment
         let newPayment = Payment(context: self.context)
         newPayment.id = getNextPaymentId()
-        newPayment.policy_id = Int64(policyId)
+        newPayment.policy_id = policyId
         newPayment.payment_amount = amount
         newPayment.payment_date = date
         newPayment.payment_method = method

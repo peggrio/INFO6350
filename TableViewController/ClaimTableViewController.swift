@@ -10,7 +10,7 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     var policy: Policy?
-    var policyId: Int?
+    var policyId: String?
    
     var claims: [Claim]? = [] // Initialize as empty array
     var filteredClaims: [Claim]? = [] // Initialize as empty array
@@ -81,12 +81,12 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
             // If searching, add the search predicate
             if isFiltering {
                 let searchText = searchController.searchBar.text!
-                let policyPredicate = NSPredicate(format: "policy_id == %@", NSNumber(value: policyId))
+                let policyPredicate = NSPredicate(format: "policy_id == %@", policyId)
                 let searchPredicate = NSPredicate(format: "id CONTAINS[cd] %@", searchText)
                 let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [policyPredicate, searchPredicate])
                 request.predicate = compoundPredicate
             } else {
-                request.predicate = NSPredicate(format: "policy_id == %@", NSNumber(value: policyId))
+                request.predicate = NSPredicate(format: "policy_id == %@", policyId)
             }
             
             request.sortDescriptors = [NSSortDescriptor(key: "id", ascending: true)]

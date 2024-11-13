@@ -6,7 +6,7 @@ class AddClaimViewController: UIViewController {
     // MARK: Properties
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    var policyId: Int!
+    var policyId: String!
     var claim: Claim!
     private let statusOptions = ["Pending", "In Review", "Approved", "Rejected"]
     weak var delegate: ClaimUpdateDelegate?
@@ -159,7 +159,7 @@ class AddClaimViewController: UIViewController {
     }
     
     // MARK: - Helper Methods
-    private func getNextClaimId() -> Int64 {
+    private func getNextClaimId() -> String {
         let fetchRequest: NSFetchRequest<Claim> = Claim.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "id", ascending: false)]
         fetchRequest.fetchLimit = 1
@@ -167,12 +167,12 @@ class AddClaimViewController: UIViewController {
         do {
             let claims = try context.fetch(fetchRequest)
             if let lastClaim = claims.first {
-                return lastClaim.id + 1
+                return String(Int(bitPattern: lastClaim.id) + 1)
             }
-            return 1 // Start with 1 if no customers exist
+            return "1" // Start with 1 if no customers exist
         } catch {
             print("Error fetching last claim ID: \(error)")
-            return 1
+            return "1"
         }
     }
     
@@ -199,7 +199,7 @@ class AddClaimViewController: UIViewController {
         //add the claim
         let newClaim = Claim(context: self.context)
         newClaim.id = getNextClaimId()
-        newClaim.policy_id = Int64(policyId)
+        newClaim.policy_id = policyId
         newClaim.claim_amount = amount
         newClaim.date_Of_claim = date
         newClaim.status = status

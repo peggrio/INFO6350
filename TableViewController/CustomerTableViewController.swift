@@ -7,6 +7,8 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
     let searchController = UISearchController(searchResultsController: nil)
 
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+//    let viewModel = CustomerViewModel()
+    private let apiService = CustomerAPIService()
     
     var customers: [Customer]?
     var filteredCustomers: [Customer]?
@@ -27,7 +29,11 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
         
         setupTableView()
         setupSearchController()
-        fetchCustomers()
+        
+        // Create a Task to handle async work
+        Task {
+            await fetchCustomersFromAPI()
+        }
     }
     
     private func setupTableView() {
@@ -49,7 +55,7 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
         definesPresentationContext = true
     }
     
-    func fetchCustomers(){
+    func fetchLocalCustomers(){
         //fetch the data from core data to display in the tableview
         do{
             
@@ -78,16 +84,56 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
             print("Error fetching customers: \(error)")}
     }
     
+    func fetchCustomersFromAPI() async {
+        do {
+            let dtos = try await apiService.populateCustomers()
+            
+            // Save to CoreData
+            await MainActor.run {
+                for dto in dtos {
+                    print("age: \(dto.age)")
+                    print("age: \(dto.profilePictureUrl)")
+                    // Check if customer already exists
+                    let fetchRequest: NSFetchRequest<Customer> = Customer.fetchRequest()
+                    fetchRequest.predicate = NSPredicate(format: "id == %d", dto.id)
+                    
+                    do {
+                        let existingCustomers = try context.fetch(fetchRequest)
+                        if let existingCustomer = existingCustomers.first {
+                            // Update existing customer
+                            existingCustomer.name = dto.name
+                            existingCustomer.age = dto.age
+                            existingCustomer.email = dto.email
+                            existingCustomer.profilePictureUrl = dto.profilePictureUrl
+                        } else {
+                            // Create new customer
+                            _ = Customer.fromDTO(dto, context: context)
+                        }
+                        
+                        try context.save()
+                    } catch {
+                        print("Error saving customer: \(error)")
+                    }
+                }
+                
+                // Refresh the table with new data
+                fetchLocalCustomers()
+            }
+        } catch {
+            print("Error fetching customers from API: \(error)")
+        }
+    }
+    
     // MARK: - UISearchBarDelegate
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        fetchCustomers()
+        fetchLocalCustomers()
         searchBar.resignFirstResponder()
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         // Fetch results as user types
-        fetchCustomers()
+        fetchLocalCustomers()
     }
     
     //Add function
@@ -106,8 +152,6 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
         tableView.deselectRow(at: indexPath, animated: true)
         let customer = self.customers![indexPath.row]
         
-        print("Selected customer: \(customer.name)")
-    
         // Create and configure the details view controller
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let customerVC = storyboard.instantiateViewController(withIdentifier: "CustomerViewController") as? CustomerViewController {
@@ -134,7 +178,7 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
             
             //Customers with existing Insurance Policies cannot be deleted.
             let fetchRequest: NSFetchRequest<Policy> = Policy.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "customer_id == %d", customer.id)
+            fetchRequest.predicate = NSPredicate(format: "customer_id == %@", customer.id ?? "")
             
             do {
                 let policies = try context.fetch(fetchRequest)
@@ -198,16 +242,31 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
-        
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "CustomerCell", for: indexPath) as! CustomerCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CustomerCell", for: indexPath)
         let customer: Customer?
         if isFiltering {
             customer = filteredCustomers?[indexPath.row]
         } else {
             customer = customers?[indexPath.row]
         }
-        
         cell.textLabel?.text = customer?.name
+        
+        // Load customer image asynchronously
+        Task {
+            do {
+                let image = try await apiService.populateCustomerImage(from: customer?.profilePictureUrl ?? "")
+                await MainActor.run {
+                    if let currentCell = tableView.cellForRow(at: indexPath) {
+                        currentCell.imageView?.image = image
+                        currentCell.setNeedsLayout()
+                    }
+                }
+            } catch {
+                print("Error loading image: \(error)")
+            }
+        }
+        
         return cell
     }
 }
@@ -225,7 +284,7 @@ protocol UpdateCustomerDelegate: AnyObject {
 // MARK: - Search Results Updating
 extension CustomerTableViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        fetchCustomers()
+        fetchLocalCustomers()
     }
 }
 
@@ -233,7 +292,7 @@ extension CustomerTableViewController: UISearchResultsUpdating {
 extension CustomerTableViewController: AddCustomerDelegate {
     func didAddCustomer(_ customer: Customer) {
         // Refresh the table view data
-        self.fetchCustomers()
+        self.fetchLocalCustomers()
     }
 }
 

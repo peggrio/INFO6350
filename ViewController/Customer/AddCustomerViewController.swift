@@ -66,6 +66,16 @@ class AddCustomerViewController: UIViewController {
         return textField
     }()
     
+    private let uploadProfileButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Upload profile", for: .normal)
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 10
+        button.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        return button
+    }()
+    
     private let addButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Add Customer", for: .normal)
@@ -103,6 +113,7 @@ class AddCustomerViewController: UIViewController {
         containerStackView.addArrangedSubview(nameStack)
         containerStackView.addArrangedSubview(ageStack)
         containerStackView.addArrangedSubview(emailStack)
+        containerStackView.addArrangedSubview(uploadProfileButton)
         containerStackView.addArrangedSubview(addButton)
         
         // Add some padding at the bottom
@@ -128,6 +139,7 @@ class AddCustomerViewController: UIViewController {
     }
     
     private func setupActions() {
+        uploadProfileButton.addTarget(self, action: #selector(addProfileTapped), for: .touchUpInside)
         addButton.addTarget(self, action: #selector(addCustomerTapped), for: .touchUpInside)
     }
     
@@ -157,7 +169,7 @@ class AddCustomerViewController: UIViewController {
     }
     
     // MARK: - Helper Methods
-    private func getNextCustomerId() -> Int64 {
+    private func getNextCustomerId() -> String {
         let fetchRequest: NSFetchRequest<Customer> = Customer.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "id", ascending: false)]
         fetchRequest.fetchLimit = 1
@@ -165,16 +177,34 @@ class AddCustomerViewController: UIViewController {
         do {
             let customers = try context.fetch(fetchRequest)
             if let lastCustomer = customers.first {
-                return lastCustomer.id + 1
+                return String(Int(bitPattern: lastCustomer.id) + 1)
             }
-            return 1 // Start with 1 if no customers exist
+            return "1" // Start with 1 if no customers exist
         } catch {
             print("Error fetching last customer ID: \(error)")
-            return 1
+            return "1"
         }
     }
     
     // MARK: - Actions
+    
+    @objc private func addProfileTapped() {
+        
+        print("add new customer profile")
+        
+        guard let existingCustomer = customer else { return }
+        
+        let customerDTO = CustomerDTO(
+            id: existingCustomer.id ?? "",
+            age: existingCustomer.age, name: existingCustomer.name ?? "",
+            email: existingCustomer.email ?? "",
+            profilePictureUrl: existingCustomer.profilePictureUrl ?? ""
+        )
+//        
+//        let profileVC = CustomerProfileViewController(customer: customerDTO)
+//        navigationController?.pushViewController(profileVC, animated: true)
+    }
+    
     @objc private func addCustomerTapped() {
         guard let name = nameTextField.text, !name.isEmpty,
               let ageText = ageTextField.text, let age = Int64(ageText),

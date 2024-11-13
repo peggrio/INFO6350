@@ -281,7 +281,7 @@ class PolicyViewController: UIViewController {
         if let claimsVC = storyboard?.instantiateViewController(withIdentifier: "ClaimTableViewController") as? ClaimTableViewController {
             // Pass the data
             claimsVC.policy = policy
-            claimsVC.policyId = Int(policy.id)
+            claimsVC.policyId = policy.id ?? ""
 
             // Push the view controller
             navigationController?.pushViewController(claimsVC, animated: true)
@@ -295,7 +295,7 @@ class PolicyViewController: UIViewController {
         if let paymentsVC = storyboard?.instantiateViewController(withIdentifier: "PaymentTableViewController") as? PaymentTableViewController {
             // Pass the data
             paymentsVC.policy = policy
-            paymentsVC.policyId = Int(policy.id)
+            paymentsVC.policyId = policy.id
             
             // Push the view controller
             navigationController?.pushViewController(paymentsVC, animated: true)
