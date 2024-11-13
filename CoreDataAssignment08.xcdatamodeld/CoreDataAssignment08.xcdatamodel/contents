@@ -13,6 +13,7 @@
         <attribute name="email" attributeType="String"/>
         <attribute name="id" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
+        <attribute name="profilePicture" optional="YES" attributeType="Binary"/>
         <attribute name="profilePictureUrl" optional="YES" attributeType="String"/>
         <relationship name="policy" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Policy" inverseName="customer" inverseEntity="Policy"/>
     </entity>

@@ -200,9 +200,6 @@ class AddCustomerViewController: UIViewController {
             email: existingCustomer.email ?? "",
             profilePictureUrl: existingCustomer.profilePictureUrl ?? ""
         )
-//        
-//        let profileVC = CustomerProfileViewController(customer: customerDTO)
-//        navigationController?.pushViewController(profileVC, animated: true)
     }
     
     @objc private func addCustomerTapped() {

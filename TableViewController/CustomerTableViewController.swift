@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate, UISearchBarDelegate {
+class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate, CustomerUpdateProfileDelegate, UISearchBarDelegate {
     
     let cellIdentifier = "CustomerCell"
     let searchController = UISearchController(searchResultsController: nil)
@@ -55,32 +55,31 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
     }
     
     func fetchLocalCustomers(){
-        //fetch the data from core data to display in the tableview
-        do{
-            
-            let request = Customer.fetchRequest() as NSFetchRequest<Customer>
-            
-            // If searching, add the search predicate
-            if isFiltering {
-                let searchText = searchController.searchBar.text!
-                let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
-                request.predicate = predicate
-            }
-            
-            let results = try context.fetch(request)
-                        
-            if isFiltering {
-                self.filteredCustomers = results
-            } else {
-                self.customers = results
-                self.filteredCustomers = results
-            }
-            
-            DispatchQueue.main.async {
+        Task { @MainActor in
+            do {
+                let request = Customer.fetchRequest() as NSFetchRequest<Customer>
+                
+                // If searching, add the search predicate
+                if isFiltering {
+                    let searchText = searchController.searchBar.text!
+                    let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
+                    request.predicate = predicate
+                }
+                
+                let results = try context.fetch(request)
+                
+                if isFiltering {
+                    self.filteredCustomers = results
+                } else {
+                    self.customers = results
+                    self.filteredCustomers = results
+                }
+                
                 self.tableView.reloadData()
+            } catch {
+                print("Error fetching customers: \(error)")
             }
-        }catch{
-            print("Error fetching customers: \(error)")}
+        }
     }
     
     func fetchCustomersFromAPI() async {
@@ -90,10 +89,6 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
             // Save to CoreData
             await MainActor.run {
                 for dto in dtos {
-                    // Check if customer already existspo0
-                    
-                    print("url:\(dto.profilePictureUrl)")
-                    
                     let fetchRequest: NSFetchRequest<Customer> = Customer.fetchRequest()
                     fetchRequest.predicate = NSPredicate(format: "id == %d", dto.id)
                     
@@ -102,9 +97,12 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
                         if let existingCustomer = existingCustomers.first {
                             // Update existing customer
                             existingCustomer.name = dto.name
-                            existingCustomer.age = dto.age
+                            existingCustomer.age = Int64(dto.age)
                             existingCustomer.email = dto.email
-                            existingCustomer.profilePictureUrl = dto.profilePictureUrl
+                            
+                            if let imageData = try? Data(contentsOf: URL(string: dto.profilePictureUrl)!) {
+                                existingCustomer.profilePicture = imageData
+                            }
                         } else {
                             // Create new customer
                             _ = Customer.fromDTO(dto, context: context)
@@ -116,7 +114,6 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
                     }
                 }
                 
-                // Refresh the table with new data
                 fetchLocalCustomers()
             }
         } catch {
@@ -250,20 +247,48 @@ class CustomerTableViewController: UITableViewController, CustomerUpdateDelegate
         } else {
             customer = customers?[indexPath.row]
         }
-        cell.textLabel?.text = customer?.name
         
-        // Load customer image asynchronously
+        cell.textLabel?.text = customer?.name
+        cell.imageView?.image = UIImage(systemName: "person.circle.fill")
+        
         Task {
             do {
-                let image = try await apiService.populateCustomerImage(from: customer?.profilePictureUrl ?? "")
+                var image: UIImage?
+                
+                // First try to load from Core Data
+                 if let profilePictureData = customer?.profilePicture {
+                     image = UIImage(data: profilePictureData)
+                 }
+                 
+                 // If no image in Core Data, try to load from URL
+                 if image == nil, let profilePictureUrl = customer?.profilePictureUrl {
+                     image = try await apiService.populateCustomerImage(from: profilePictureUrl)
+                     
+                     // Save the image data to Core Data for future use
+                     if let imageData = image?.jpegData(compressionQuality: 0.8) {
+                         customer?.profilePicture = imageData
+                         try? context.save()
+                     }
+                 }
+                 
+                 await MainActor.run {
+                     if let currentCell = tableView.cellForRow(at: indexPath) {
+                         if let finalImage = image {
+                             currentCell.imageView?.image = finalImage
+                         } else {
+                             currentCell.imageView?.image = UIImage(systemName: "person.circle.fill")
+                         }
+                         currentCell.setNeedsLayout()
+                     }
+                 }
+            } catch {
+                print("Error loading image: \(error)")
                 await MainActor.run {
                     if let currentCell = tableView.cellForRow(at: indexPath) {
-                        currentCell.imageView?.image = image
+                        currentCell.imageView?.image = UIImage(systemName: "person.circle.fill")
                         currentCell.setNeedsLayout()
                     }
                 }
-            } catch {
-                print("Error loading image: \(error)")
             }
         }
         
@@ -279,6 +304,11 @@ protocol AddCustomerDelegate: AnyObject {
 // MARK: - Update Delegate Protocol
 protocol UpdateCustomerDelegate: AnyObject {
     func didUpdateCustomer(_ customer: Customer)
+}
+
+// MARK: - Update Delegate Protocol
+protocol UpdateCustomerProfileDelegate: AnyObject {
+    func didUpdateCustomerProfile(_ customer: Customer)
 }
 
 // MARK: - Search Results Updating
@@ -303,5 +333,18 @@ extension CustomerTableViewController: UpdateCustomerDelegate {
             tableView.reloadData()
         }
 
+    }
+}
+
+extension CustomerTableViewController: UpdateCustomerProfileDelegate {
+    func didUpdateCustomerProfile(_ updatedCustomer: Customer) {
+        // Fetch fresh data from Core Data
+        fetchLocalCustomers()
+        
+        // Force reload the specific row if we know the index
+        if let index = customers?.firstIndex(where: { $0.id == updatedCustomer.id }) {
+            let indexPath = IndexPath(row: index, section: 0)
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
     }
 }

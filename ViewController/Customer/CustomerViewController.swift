@@ -5,12 +5,16 @@ protocol CustomerUpdateDelegate: AnyObject {
     func didUpdateCustomer(_ customer: Customer)
 }
 
+protocol CustomerUpdateProfileDelegate: AnyObject {
+    func didUpdateCustomerProfile(_ customer: Customer)
+}
+
 class CustomerViewController: UIViewController {
+    
     
     // MARK: Properties
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    private let apiService = CustomerAPIService()
-    
+
     var customer: Customer!
 
     weak var delegate: CustomerUpdateDelegate?
@@ -150,40 +154,16 @@ class CustomerViewController: UIViewController {
             
             // Populate the image asynchronously
             Task {
-                let image = try await apiService.populateCustomerImage(from: customer.profilePictureUrl ?? "")
-                DispatchQueue.main.async {
-                    // Update UI on the main thread
-                    self.profileImageView.image = image
+                if let profilePictureData = customer.profilePicture {
+                    profileImageView.image = UIImage(data: profilePictureData)
+                } else {
+                    // Set the default image if customer is nil
+                    profileImageView.image = UIImage(systemName: "person.circle.fill")
                 }
             }
-        } else {
-            // Set the default image if customer is nil
-            profileImageView.image = UIImage(systemName: "person.circle.fill")
         }
-        //        print("name:\(customer.name)")
-        //        print("url:\(customer.profilePictureUrl)")
-        //        idLabel.text = "id: \(customer.id)"
-        //        if let email = customer.email {
-        //            emailLabel.text = "Email: \(email)"
-        //        }
-        //        nameTextField.text = customer.name
-        //        ageTextField.text = String(customer.age)
-        //        
-        //        // Populate the image asynchronously
-        //        Task {
-        //            let image = try await apiService.populateCustomerImage(from: customer.profilePictureUrl ?? "")
-        //            DispatchQueue.main.async {
-        //                // Update UI on the main thread
-        //                self.profileImageView.image = image
-        //            }
-        //        }
-        //    } else {
-        //        // Set the default image if customer is nil
-        //        profileImageView.image = UIImage(systemName: "person.circle.fill")
-        //    }
-        //    }
-        //    
     }
+    
     private func setupKeyboardToolbar() {
         // Create toolbar
         let toolbar = UIToolbar()
@@ -209,14 +189,16 @@ class CustomerViewController: UIViewController {
     }
     
     @objc private func handleImageTap() {
+        
         print("handle image tapped")
+        
         // Navigate to change profile picture view controller
-//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//        if let changeProfileVC = storyboard.instantiateViewController(withIdentifier: "CustomerProfileViewController") as? CustomerProfileViewController {
-//            changeProfileVC.delegate = self
-//            changeProfileVC.policyId = policyId
-//            navigationController?.pushViewController(addClaimVC, animated: true)
-//        }
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let changeProfileVC = storyboard.instantiateViewController(withIdentifier: "CustomerProfileViewController") as? CustomerProfileViewController {
+                changeProfileVC.delegate = self
+                changeProfileVC.customer = customer
+            navigationController?.pushViewController(changeProfileVC, animated: true)
+        }
     }
 
     // MARK: - Actions
@@ -250,5 +232,16 @@ class CustomerViewController: UIViewController {
     private func showAlert(message: String, style: AlertStyle = .error) {
         let customAlert = AlertView()
         customAlert.show(style: style, message: message, in: self, autoDismiss: style == .success)
+    }
+}
+
+// Add the extension at the bottom of your CustomerViewController file
+extension CustomerViewController: CustomerUpdateProfileDelegate {
+    func didUpdateCustomerProfile(_ customer: Customer) {
+        // Update the current customer
+        self.customer = customer
+        
+        // Refresh the UI
+        populateData()
     }
 }
