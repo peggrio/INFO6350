@@ -199,8 +199,6 @@ class PaymentViewController: UIViewController {
             delegate?.didUpdatePayment(payment)
             navigationController?.popViewController(animated: true)
             
-            // Log
-            print("Payment \(payment.id) updated")
         } catch {
             print("Error updating the payment: \(error)")
             showAlert(message: "Failed to update payment")

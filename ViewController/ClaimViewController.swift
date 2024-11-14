@@ -155,7 +155,10 @@ class ClaimViewController: UIViewController {
     }
     
     private func populateData() {
-        claimIDLabel.text = "Claim ID: #\(claim.id)"
+        
+        let id = claim.id ?? ""
+        
+        claimIDLabel.text = "Claim ID: #\(id)"
         amountTextField.text = String(format: "%.2f", claim.claim_amount)
         dateLabel.text = "Date of Claim: \(formatDate(claim.date_Of_claim))"
         if let statusIndex = statusOptions.firstIndex(of: claim.status ?? "") {

@@ -27,14 +27,7 @@ class PaymentTableViewController: UITableViewController, PaymentUpdateDelegate, 
     // MARK: - Lifecycle Methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Add debug print to check policy
-        if let policy = policy {
-            print("Policy is set with ID: \(policy.id)")
-        } else {
-            print("Warning: Policy is nil in viewDidLoad")
-        }
-        
+
         setupTableView()
         setupSearchController()
         fetchPayments()
@@ -142,7 +135,10 @@ class PaymentTableViewController: UITableViewController, PaymentUpdateDelegate, 
         
         let payment = payments[indexPath.row]
         var content = cell.defaultContentConfiguration()
-        content.text = "Payment #\(payment.id)"
+        
+        let id = payment.id ?? ""
+        content.text = "Payment #\(id)"
+        
         if let status = payment.status{
             content.secondaryText = "Amount: $\(payment.payment_amount) - Status: \(status)"
         }

@@ -9,6 +9,7 @@ class CustomerProfileViewController: UIViewController {
     var customer: Customer!
     weak var delegate: CustomerUpdateProfileDelegate?
     
+    
     private var selectedProfileImage: UIImage?
     
     // MARK: - UI Elements
@@ -126,7 +127,7 @@ class CustomerProfileViewController: UIViewController {
         
         // Update the customer's profile picture
         customer.profilePicture = newProfilePicture.pngData()
-        
+        print("id after save profile is: \(customer.id)")
         do {
             try context.save()
             delegate?.didUpdateCustomerProfile(customer)

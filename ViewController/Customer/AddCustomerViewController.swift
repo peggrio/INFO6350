@@ -1,6 +1,14 @@
 import UIKit
 import CoreData
 
+protocol CustomerAddDelegate: AnyObject {
+    func didUpdateCustomer(_ customer: Customer)
+}
+
+protocol CustomerAddProfileDelegate: AnyObject {
+    func didUpdateCustomerProfile(_ customer: Customer)
+}
+
 class AddCustomerViewController: UIViewController {
 
     // MARK: Properties
@@ -9,6 +17,23 @@ class AddCustomerViewController: UIViewController {
     var customer: Customer?
     
     weak var delegate: AddCustomerDelegate?
+    
+    private var currentCustomer: Customer {
+        if let existingCustomer = customer {
+            return existingCustomer
+        } else {
+            // Create a temporary customer that hasn't been saved to Core Data yet
+            let tempCustomer = Customer(context: context)
+            tempCustomer.id = getNextCustomerId()
+            // Transfer any existing field values
+            tempCustomer.name = nameTextField.text
+            tempCustomer.email = emailTextField.text
+            if let ageText = ageTextField.text, let age = Int64(ageText) {
+                tempCustomer.age = age
+            }
+            return tempCustomer
+        }
+    }
     
     // MARK: - UI Elements
     private let containerStackView: UIStackView = {
@@ -66,6 +91,18 @@ class AddCustomerViewController: UIViewController {
         return textField
     }()
     
+    private let profileImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 50
+        imageView.layer.borderWidth = 2
+        imageView.layer.borderColor = UIColor.systemBlue.cgColor
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.isUserInteractionEnabled = true
+        return imageView
+    }()
+    
     private let uploadProfileButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Upload profile", for: .normal)
@@ -93,6 +130,7 @@ class AddCustomerViewController: UIViewController {
         setupUI()
         setupConstraints()
         setupActions()
+        populateData()
         setupKeyboardToolbar()
     }
     
@@ -113,6 +151,7 @@ class AddCustomerViewController: UIViewController {
         containerStackView.addArrangedSubview(nameStack)
         containerStackView.addArrangedSubview(ageStack)
         containerStackView.addArrangedSubview(emailStack)
+        containerStackView.addArrangedSubview(profileImageView)
         containerStackView.addArrangedSubview(uploadProfileButton)
         containerStackView.addArrangedSubview(addButton)
         
@@ -134,13 +173,33 @@ class AddCustomerViewController: UIViewController {
             // Container stack view constraints
             containerStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             containerStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            containerStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+            containerStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            // Profile image view constraints
+            profileImageView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.3), // 30% of screen height
+            profileImageView.widthAnchor.constraint(equalTo: profileImageView.heightAnchor)
         ])
     }
     
     private func setupActions() {
-        uploadProfileButton.addTarget(self, action: #selector(addProfileTapped), for: .touchUpInside)
+        uploadProfileButton.addTarget(self, action: #selector(handleImageTap), for: .touchUpInside)
         addButton.addTarget(self, action: #selector(addCustomerTapped), for: .touchUpInside)
+    }
+    
+    private func populateData() {
+        
+        if let customer = customer {
+            
+            // Populate the image asynchronously
+            Task {
+                if let profilePictureData = customer.profilePicture {
+                    profileImageView.image = UIImage(data: profilePictureData)
+                } else {
+                    // Set the default image if customer is nil
+                    profileImageView.image = UIImage(systemName: "person.circle.fill")
+                }
+            }
+        }
     }
     
     private func setupKeyboardToolbar() {
@@ -171,38 +230,35 @@ class AddCustomerViewController: UIViewController {
     // MARK: - Helper Methods
     private func getNextCustomerId() -> String {
         let fetchRequest: NSFetchRequest<Customer> = Customer.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "id", ascending: false)]
-        fetchRequest.fetchLimit = 1
         
         do {
             let customers = try context.fetch(fetchRequest)
-            if let lastCustomer = customers.first {
-                // Convert string to integer, increment, then convert back to string
-                if let currentId = Int(lastCustomer.id ?? "0") {
-                    return String(currentId + 1)
-                }
-            }
-            return "1" // Start with 1 if no customers exist
+            
+            // Convert all valid IDs to integers and find the maximum
+            let maxId = customers.compactMap { Int($0.id ?? "0") }
+                .max() ?? 0
+            
+            return String(maxId + 1)
         } catch {
-            print("Error fetching last customer ID: \(error)")
+            print("Error fetching customers: \(error)")
             return "1"
         }
     }
     
     // MARK: - Actions
     
-    @objc private func addProfileTapped() {
+    @objc private func handleImageTap() {
         
-        print("add new customer profile")
+        print("handle image tapped")
         
-        guard let existingCustomer = customer else { return }
+        // Navigate to change profile picture view controller
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
-        let customerDTO = CustomerDTO(
-            id: existingCustomer.id ?? "",
-            age: existingCustomer.age, name: existingCustomer.name ?? "",
-            email: existingCustomer.email ?? "",
-            profilePictureUrl: existingCustomer.profilePictureUrl ?? ""
-        )
+        if let changeProfileVC = storyboard.instantiateViewController(withIdentifier: "CustomerProfileViewController") as? CustomerProfileViewController {
+                changeProfileVC.delegate = self
+                changeProfileVC.customer = currentCustomer
+            navigationController?.pushViewController(changeProfileVC, animated: true)
+        }
     }
     
     @objc private func addCustomerTapped() {
@@ -220,23 +276,23 @@ class AddCustomerViewController: UIViewController {
         }
 
         // adding
-        // create a customer object
-        let newCustomer = Customer(context:self.context)
-        newCustomer.id = getNextCustomerId()
-        newCustomer.name = name
-        newCustomer.age = age
-        newCustomer.email = email
+        // Use the current customer instead of creating a new one
+        let customerToSave = currentCustomer
+        customerToSave.name = name
+        customerToSave.age = age
+        customerToSave.email = email
         
         //Save the data
         do{
+            print("id is: \(customerToSave.id)")
             try self.context.save()
             
             //notify delegate
-            delegate?.didAddCustomer(newCustomer)
+            delegate?.didAddCustomer(customerToSave)
             navigationController?.popViewController(animated: true)
             
             //log
-            print("\(newCustomer.name) added")
+            print("\(customerToSave.name) added")
         }catch{
             print("Error add the customer: \(error)")
             showAlert(message: "Failed to update customer")
@@ -254,5 +310,15 @@ class AddCustomerViewController: UIViewController {
     private func showAlert(message: String, style: AlertStyle = .error) {
         let customAlert = AlertView()
         customAlert.show(style: style, message: message, in: self, autoDismiss: style == .success)
+    }
+}
+
+extension AddCustomerViewController: CustomerUpdateProfileDelegate {
+    func didUpdateCustomerProfile(_ customer: Customer) {
+        // Update the current customer
+        self.customer = customer
+        
+        // Refresh the UI
+        populateData()
     }
 }

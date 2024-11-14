@@ -234,7 +234,6 @@ class CustomerViewController: UIViewController {
     }
 }
 
-// Add the extension at the bottom of your CustomerViewController file
 extension CustomerViewController: CustomerUpdateProfileDelegate {
     func didUpdateCustomerProfile(_ customer: Customer) {
         // Update the current customer

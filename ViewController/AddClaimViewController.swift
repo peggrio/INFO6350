@@ -167,7 +167,10 @@ class AddClaimViewController: UIViewController {
         do {
             let claims = try context.fetch(fetchRequest)
             if let lastClaim = claims.first {
-                return String(Int(bitPattern: lastClaim.id) + 1)
+                // Convert string to integer, increment, then convert back to string
+                if let currentId = Int(lastClaim.id ?? "0") {
+                    return String(currentId + 1)
+                }
             }
             return "1" // Start with 1 if no customers exist
         } catch {
@@ -209,7 +212,6 @@ class AddClaimViewController: UIViewController {
             try self.context.save()
             delegate?.didAddClaim(newClaim)
             navigationController?.popViewController(animated: true)
-            print("Claim added for policy: \(String(policyId) ?? "")")
         } catch {
             print("Error adding the claim: \(error)")
             showAlert(message: "Failed to add claim")

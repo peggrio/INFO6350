@@ -199,7 +199,10 @@ class AddPaymentViewController: UIViewController {
         do {
             let payments = try context.fetch(fetchRequest)
             if let lastPayment = payments.first {
-                return String(Int(bitPattern: lastPayment.id) + 1)
+                // Convert string to integer, increment, then convert back to string
+                if let currentId = Int(lastPayment.id ?? "0") {
+                    return String(currentId + 1)
+                }
             }
             return "1" // Start with 1 if no customers exist
         } catch {
@@ -243,7 +246,7 @@ class AddPaymentViewController: UIViewController {
             try self.context.save()
             delegate?.didAddPayment(newPayment)
             navigationController?.popViewController(animated: true)
-            print("Payment added for policy: \(String(policyId) ?? "")")
+
         } catch {
             print("Error adding the payment: \(error)")
             showAlert(message: "Failed to add payment")

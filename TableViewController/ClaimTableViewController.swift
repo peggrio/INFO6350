@@ -142,7 +142,11 @@ class ClaimTableViewController: UITableViewController, ClaimUpdateDelegate, UISe
         
         let claim = claims[indexPath.row]
         var content = cell.defaultContentConfiguration()
-        content.text = "Claim #\(claim.id)"
+        
+        
+        let id = claim.id ?? ""
+        
+        content.text = "Claim #\(id)"
         if let status = claim.status {
             content.secondaryText = "Amount: $\(claim.claim_amount) - Status: \(status)"
         }
