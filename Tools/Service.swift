@@ -3,7 +3,7 @@ import UIKit
 import CoreData
 
 // MARK: - API Service
-class CustomerAPIService {
+class APIService {
     private let baseURL = "https://67339378a042ab85d11755a3.mockapi.io/api/v1"
     
     enum APIError: Error {
@@ -15,7 +15,7 @@ class CustomerAPIService {
     
     func populateCustomers() async throws -> [CustomerDTO] {
         
-        print("populate!")
+        print("Populate Customers!")
         
         guard let url = URL(string: "\(baseURL)/customers") else {
             throw APIError.invalidURL
@@ -38,14 +38,17 @@ class CustomerAPIService {
         return image
     }
     
-//    func fetchPolicies() async throws -> [Policy] {
-//        guard let url = URL(string: "\(baseURL)/policies") else {
-//            throw APIError.invalidURL
-//        }
-//        
-//        let (data, _) = try await URLSession.shared.data(from: url)
-//        return try JSONDecoder().decode([PolicyDTO].self, from: data)
-//    }
+    func populatePolicies() async throws -> [PolicyDTO] {
+        
+        print("Populate Policies!")
+        
+        guard let url = URL(string: "\(baseURL)/policies") else {
+            throw APIError.invalidURL
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return try JSONDecoder().decode([PolicyDTO].self, from: data)
+    }
 }
 
 //// MARK: - Customer Core data Service
